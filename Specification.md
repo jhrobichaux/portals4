@@ -1,0 +1,1 @@
+The Portals 4.0 specification has now been finalized and is available for download from the Sandia Portals project page (http://www.cs.sandia.gov/Portals/portals4-spec.html).  Errata items will be posted on the Sandia project page as they are discovered.
