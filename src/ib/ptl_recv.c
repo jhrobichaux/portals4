@@ -54,8 +54,8 @@ static int comp_poll(ni_t *ni, int num_wc, struct ibv_wc wc_list[],
             rep_poll++;
             pthread_yield();
 
-            if (rep_poll >= 1000) {
-                if (rep_poll == 1000)
+            if (rep_poll >= ptl_env_polling_interval) {
+                if (rep_poll == ptl_env_polling_interval)
                     ibv_req_notify_cq(ni->rdma.cq, 0);
                 else {
                     if (atomic_read(&keep_polling) == 0 &&

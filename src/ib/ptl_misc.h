@@ -11,5 +11,4 @@ extern char *ptl_env_affinity;
 int ppe_misc_init_once(void);
 #else
 int misc_init_once(void);
-void affinity();
 #endif
