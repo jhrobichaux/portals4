@@ -15,9 +15,34 @@ int ptl_disable_ummu;
 unsigned long pagesize;
 unsigned int linesize;
 
+int ptl_env_polling_interval;
+char *ptl_env_affinity;
+
+
 #if !IS_LIGHT_LIB
 struct transports transports;
 #endif
+
+/* read env vars and set appropriate flags */
+static void get_env_vars(void)
+{
+    char *str;
+    str = getenv("PTL_PROGRESS_POLLING_INTERVAL");
+    if (str == NULL)
+    {
+        ptl_env_polling_interval = 1000;
+    } else {
+        ptl_env_polling_interval = atoi(str);
+    }
+
+    str = getenv("PTL_PROGRESS_AFFINITY");
+    if (str == NULL) {
+        ptl_env_affinity = NULL;
+    } else {
+        ptl_env_affinity = str;
+    }
+}
+
 
 #ifdef IS_PPE
 
@@ -77,6 +102,8 @@ int misc_init_once(void)
 #else
     linesize = 64;
 #endif
+
+    get_env_vars();
 
 #if !IS_LIGHT_LIB
 

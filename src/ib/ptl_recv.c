@@ -889,6 +889,47 @@ void process_recv_udp(ni_t *ni, buf_t *buf)
 #endif
 
 #if !IS_PPE
+
+#ifndef __APPLE__
+static void progress_thread_set_affinity(char *s)
+{
+    char *saveptra = NULL, *saveptrb = NULL, *saveptrc = NULL;
+    char *a, *b, *c;
+    int j, first, last, stride;
+    cpu_set_t acpuset;
+    pthread_t mythread;
+
+    mythread = pthread_self();
+    CPU_ZERO(&acpuset);
+
+    a = strtok_r(s, ",", &saveptra);
+    while (a) {
+        first = last = -1;
+        stride = 1;
+        b = strtok_r(a, "-", &saveptrb);
+        first = atoi(b);
+        b = strtok_r(NULL, "-", &saveptrb);
+        if (b) {
+            c = strtok_r(b, ":", &saveptrc);
+            last = atoi(c);
+            c = strtok_r(NULL, ":", &saveptrc);
+            if (c)
+                stride = atoi(c);
+        }
+
+        if (last == -1)
+            last = first;
+
+        for (j = first; j <= last; j += stride)
+            CPU_SET(j, &acpuset);
+        a =  strtok_r(NULL, ",", &saveptra);
+    }
+
+    j = pthread_setaffinity_np(mythread, sizeof(cpu_set_t), &acpuset);
+    /*  Is there a Portaks errir check */
+}
+#endif
+
 /**
  * Progress thread. Waits for ib, udp, and/or shared memory messages.
  *
@@ -901,6 +942,9 @@ static void *progress_thread(void *arg)
 #if WITH_TRANSPORT_SHMEM
     int err = 0;
 #endif
+
+    if (ptl_env_affinity != NULL)
+        progress_thread_set_affinity(ptl_env_affinity);
 
     while (!ni->catcher_stop
 #if WITH_TRANSPORT_SHMEM
